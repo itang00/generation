@@ -106,7 +106,7 @@ class HiddenMarkovModel:
 
         self.O = O_init
         if self.O is None:
-            self.O = np.random.random((L, L))
+            self.O = np.random.random((L, D))
             self.O /= np.sum(self.O, axis=1).reshape((L, 1))
             self.O = np.log(self.O)
 
