@@ -3,8 +3,9 @@
 
 import random
 import numpy as np
-from scipy.special import logsumexp
 from tqdm import tqdm
+
+logsumexp = np.logaddexp.reduce
 
 class HiddenMarkovModel:
     '''
