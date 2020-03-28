@@ -166,8 +166,8 @@ class HiddenMarkovModel:
 
     def generate_emission(self, M, syl_map, MAX_SYLS=10):
         '''
-        Generates an emission of length M, assuming that the starting state
-        is chosen uniformly at random.
+        Generates an M emissions of syllable length MAX_SYLS, assuming 
+        that the starting state is chosen uniformly at random.
         Arguments:
             M:          Length of the emission to generate.
         Returns:
@@ -184,23 +184,30 @@ class HiddenMarkovModel:
         A = np.exp(self.A)
         O = np.exp(self.O)
 
+        # Emit a line M times
         for i in range(0, M):
             syl_count = 0
             line = []
+            # Starting state randomly chosen
             if i == 0:
                 states.append(np.random.choice(np.arange(L), 1, p=A_start)[0])
+            # Construct line until it hits MAX_SYLS syllables (default 10)
             while syl_count < MAX_SYLS:
+                # Choose a state using transition matrix
                 summ = sum(A[states[len(states) - 1]])
                 for index in range(len(A[states[len(states) - 1]])):
                     if summ != 0:
                         A[states[len(states) - 1]][index] /= summ
                 next_state = np.random.choice(np.arange(L), 1, p=A[states[len(states) - 1]])[0]
                 states.append(next_state)
+                # Choose a word to emit based on observation matrix
                 next_emission = np.random.choice(np.arange(D), 1, p=O[states[len(states) - 1]])[0]
                 syl_count += syl_map[next_emission][1]
                 while True:
+                    # Continue if we have not reached max syllable count
                     if syl_count < MAX_SYLS:
                         break
+                    # If we reach max syllable count, make sure that it still works with the latest emission at the end of the line
                     elif syl_count == MAX_SYLS:
                         if syl_map[next_emission][0] != -1:
                             syl_count -= syl_map[next_emission][1]
@@ -208,6 +215,7 @@ class HiddenMarkovModel:
                             syl_count += syl_map[next_emission][1]
                         else:
                             break
+                    # If we exceed max syllable count, throw out the word and choose a new one
                     else:
                         syl_count -= syl_map[next_emission][1]
                         if syl_map[next_emission][0] != -1:
